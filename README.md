@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Fixed schedule model complete; Tehran date calculations are next.
+**Phase:** Tehran date and Saturday-week primitives complete; unit rotation is next.
 
 ### Completed
 
@@ -31,11 +31,14 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Defined strongly typed weekdays, time ranges, public periods, private slots, and cleaning periods.
 - [x] Verified the fixed model contains seven days, eight periods per day, and exactly 39 ordered private slots.
 - [x] Added initial Vitest coverage for fixed-schedule invariants.
+- [x] Implemented Gregorian date extraction in `Asia/Tehran` using `Intl.DateTimeFormat`.
+- [x] Implemented Saturday-first weekday mapping and latest-Saturday calculation.
+- [x] Implemented whole-week offsets from the Gregorian anchor Saturday `2026-07-11`.
+- [x] Added rollover and UTC-safe date-arithmetic tests.
 
 ### Remaining
 
-- [ ] Implement Tehran-time and Saturday-week calculations.
-- [ ] Implement the 39-unit rotation engine.
+- [ ] Implement the 39-unit rotation engine and resolved weekly schedule.
 - [ ] Add Jalali date formatting and Persian digit formatting.
 - [ ] Build the complete Persian RTL responsive schedule interface.
 - [ ] Add current-period and next-period highlighting.
