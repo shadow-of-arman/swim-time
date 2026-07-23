@@ -2,7 +2,7 @@
 
 ## Current state
 
-The project foundation, fixed weekly schedule model, Tehran date primitives, 39-unit rotation engine, Persian formatting utilities, responsive schedule interface, and live current/next period behavior are now present on `main`. The application calculates the active Tehran week at runtime, refreshes its clock every 30 seconds, and displays all seven days in Persian using mobile cards below 900px and a desktop weekly table above that breakpoint.
+The project foundation, fixed weekly schedule model, Tehran date primitives, 39-unit rotation engine, Persian formatting utilities, responsive schedule interface, live current/next period behavior, and week navigation are now present on `main`. The application calculates the live Tehran week at runtime, refreshes every 30 seconds, and lets the user browse earlier or later weeks while keeping unit rotation and Persian dates correct.
 
 ## Confirmed decisions
 
@@ -21,14 +21,16 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, 39-
 - Fixed schedule definitions remain immutable; resolved schedules add unit numbers without mutating public or cleaning periods.
 - Jalali conversion uses the built-in `Intl.DateTimeFormat` Persian calendar.
 - Live schedule status is calculated through pure domain helpers rather than inside React markup.
-- The current interface remains read-only; week navigation, unit lookup, and manual overrides are separate tasks.
+- Browsed weeks are stored as an integer offset relative to the live Tehran week.
+- Today, active-period, and next-period states appear only when the displayed week is the live week.
 
 ## Current architecture
 
 - `index.html`: Persian metadata, RTL document direction, page title, theme metadata, and font loading.
-- `src/main.tsx`: guarded React root setup and strict-mode rendering.
-- `src/App.tsx`: live clock refresh, current-week calculation, Persian week header, current/next period summaries, schedule legend, today/period highlighting, mobile day cards, and desktop schedule table.
-- `src/index.css`: complete responsive RTL styling, status cards, schedule cards, desktop table, today/active/next states, semantic period treatments, and accessibility helper styles.
+- `src/main.tsx`: guarded React root setup and imports for global and navigation styles.
+- `src/App.tsx`: live clock refresh, relative displayed-week state, week navigation controls, schedule resolution, Persian headers, live status summaries, mobile day cards, and desktop schedule table.
+- `src/index.css`: responsive RTL styling, status cards, schedule cards, desktop table, today/active/next states, semantic period treatments, and accessibility helpers.
+- `src/navigation.css`: previous/current/next week controls and the non-live-week information panel.
 - `src/domain/schedule.ts`: strongly typed fixed schedule model and runtime validation for exactly 39 private periods.
 - `src/domain/schedule.test.ts`: structural schedule tests.
 - `src/domain/tehranTime.ts`: Tehran Gregorian date extraction, Tehran hour/minute/second extraction, Saturday-first mapping, latest-Saturday calculation, and anchor week offsets.
@@ -39,6 +41,8 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, 39-
 - `src/domain/persianFormatting.test.ts`: formatting and boundary tests.
 - `src/domain/scheduleStatus.ts`: displayed-week validation, current-day detection, active-period detection, next-period search, and reusable position matching.
 - `src/domain/scheduleStatus.test.ts`: before-opening, active, gap, after-closing, cleaning, end-of-week, outside-week, and invalid-start tests.
+- `src/domain/weekNavigation.ts`: displayed-week Saturday calculation, anchor rotation offset calculation, current-week detection, and Persian relative-week labels.
+- `src/domain/weekNavigation.test.ts`: current/previous/next selection, Gregorian boundary, Persian label, and invalid-offset tests.
 - `package.json`: Vite, React, TypeScript, ESLint, and Vitest scripts and dependencies.
 - `tsconfig*.json`: strict application and tooling TypeScript configurations.
 - `eslint.config.js`: flat ESLint configuration for TypeScript and React hooks.
@@ -46,17 +50,15 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, 39-
 
 ## Interface behavior
 
-- The header shows the current Persian Saturday-to-Friday range and states that the schedule uses Tehran time.
+- The header shows the Persian Saturday-to-Friday range for the displayed week and identifies it as the current, previous, next, or a more distant week.
+- Persian buttons move backward one week, return to the live week, or move forward one week.
+- The correct 39-unit rotation is recalculated for every browsed week.
+- A non-live-week notice explains that live status is only available for the current week.
+- The current-period and next-period cards, today marker, and active/next highlights are hidden outside the live week.
 - The page refreshes its current time every 30 seconds so period states and Saturday rollover update while it remains open.
-- Two Persian summary cards show the active period and the next upcoming period within the displayed week.
-- Today is marked in both mobile and desktop layouts.
-- The active period and next period receive distinct restrained outlines/backgrounds in both layouts.
-- A legend distinguishes public periods, private unit periods, cleaning periods, the active period, and the next period.
 - Mobile widths render one card per day with all eight periods in a vertical list.
 - Desktop widths render one row per day and one column per time range.
 - Every unit number and all date/time labels are displayed with Persian digits.
-- If no period is active, the page explains that the current time is between periods or before opening.
-- If Friday's final period has passed, the page states that no period remains in the displayed week.
 
 ## Anchor data inferred from screenshots
 
@@ -77,10 +79,11 @@ After implementation, each run must update the README status, append to the run 
 
 ## Verification performed
 
-- The Tehran time-of-day and schedule-status modules compiled with TypeScript 5.8.3 under strict settings against compatible domain modules.
-- Node.js 22 runtime checks confirmed before-opening, active-period, between-period, after-closing, cleaning-period, and final-Friday behavior.
-- A strict JSX type-check with compatible React and domain declarations confirmed the updated `src/App.tsx` structure and imports.
-- The committed UI and CSS were reviewed for Persian-only user-facing text, RTL-safe time labels, mobile/desktop state classes, semantic table headings, `aria-current`, and live-region status summaries.
+- `src/domain/weekNavigation.ts` compiled with TypeScript 5.8.3 under strict settings against compatible dependency declarations.
+- Node.js 22 runtime assertions confirmed previous/next Saturdays, anchor rotation offsets, Gregorian month/year crossings, and Persian labels for larger offsets.
+- The committed application was reviewed to confirm displayed-week rotation uses `liveWeekOffset + relativeWeekOffset` and displayed dates use the selected Saturday.
+- The existing outside-week schedule-status behavior ensures live highlighting is absent while browsing other weeks.
+- All newly added user-facing text is Persian, and navigation buttons retain keyboard focus styling.
 - Full repository dependency installation, actual Vitest execution, linting, Vite production build, and browser rendering remain pending because the GitHub connector does not provide a repository shell or deployed preview.
 
 ## Known uncertainties and issues
@@ -89,8 +92,8 @@ After implementation, each run must update the README status, append to the run 
 - Full repository dependency installation, linting, Vitest execution, and Vite production build remain pending.
 - No lockfile exists yet. A future CI or shell-enabled run should generate and commit it if appropriate.
 - Visual browser rendering has not yet been inspected through a deployed preview.
-- The next-period helper intentionally searches only within the displayed Saturday-to-Friday week. After the final Friday period, the interface directs users to the next week rather than resolving an off-screen slot.
+- Week navigation is intentionally unbounded. This keeps the implementation simple, but very distant weeks still depend on the inferred rotation remaining valid indefinitely.
 
 ## Exact next recommended task
 
-Add previous/current/next week navigation as a focused UI-state task. Store a displayed-week offset relative to the live Tehran week, derive the displayed Saturday and resolved schedule from that offset, and add Persian buttons for the previous week, return to the current week, and next week. Keep current-day and live-period highlighting active only when the displayed week is the live week, using the existing `getDisplayedWeekStatus` outside-week behavior. Do not add unit lookup or manual overrides in the same run.
+Add unit lookup with local persistence as a focused domain-plus-UI task. Let the user select a unit from 1 through 39, store the selection in `localStorage`, locate that unit's private period in the displayed week, and show a concise Persian summary with weekday, Jalali date, and time range. Highlight the selected unit in both mobile and desktop schedules. Validate stored values and recover safely from missing or malformed storage. Keep manual overrides for a later run.
