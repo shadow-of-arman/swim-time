@@ -90,7 +90,8 @@ function useCurrentTime(): Date {
 
 function App() {
   const now = useCurrentTime()
-  const [relativeWeekOffset, setRelativeWeekOffset] = useState(0)
+  const [calendarWeekOffset, setCalendarWeekOffset] = useState(0)
+  const [unitLookupWeekOffset, setUnitLookupWeekOffset] = useState(0)
   const [selectedUnit, setSelectedUnit] = useState<number | null>(
     getInitialSelectedUnit,
   )
@@ -99,9 +100,17 @@ function App() {
   const displayedWeek = getDisplayedWeekSelection(
     liveWeekStart,
     liveWeekOffset,
-    relativeWeekOffset,
+    calendarWeekOffset,
   )
   const schedule = resolveWeeklySchedule(displayedWeek.weekOffsetFromAnchor)
+  const unitLookupWeek = getDisplayedWeekSelection(
+    liveWeekStart,
+    liveWeekOffset,
+    unitLookupWeekOffset,
+  )
+  const unitLookupSchedule = resolveWeeklySchedule(
+    unitLookupWeek.weekOffsetFromAnchor,
+  )
   const status = getDisplayedWeekStatus(now, displayedWeek.weekStart, schedule)
   const activeDetails = status.activeSlot
     ? getPositionDetails(status.activeSlot)
@@ -113,8 +122,8 @@ function App() {
     selectedUnit === null
       ? null
       : findUnitSchedulePosition(
-          displayedWeek.weekStart,
-          schedule,
+          unitLookupWeek.weekStart,
+          unitLookupSchedule,
           selectedUnit,
         )
   const selectedUnitDetails = selectedUnitPosition
@@ -168,7 +177,7 @@ function App() {
             <p className="unit-lookup__eyebrow">جستجوی نوبت شخصی</p>
             <h2 id="unit-lookup-title">نوبت واحد من</h2>
             <p>
-              شماره واحد را انتخاب کنید تا نوبت آن در هفته نمایش‌داده‌شده مشخص
+              شماره واحد را انتخاب کنید تا نوبت آن در هفته انتخاب‌شده مشخص
               شود.
             </p>
           </div>
@@ -189,6 +198,16 @@ function App() {
               ))}
             </select>
           </label>
+
+          <button
+            className="unit-lookup__week-button"
+            type="button"
+            onClick={() =>
+              setUnitLookupWeekOffset((offset) => (offset === 0 ? 1 : 0))
+            }
+          >
+            {unitLookupWeekOffset === 0 ? 'هفته بعد' : 'هفته جاری'}
+          </button>
         </div>
 
         <div
@@ -198,7 +217,7 @@ function App() {
           {selectedUnitDetails && selectedUnit !== null ? (
             <>
               <span className="unit-lookup__result-label">
-                نوبت {displayedWeek.labelFa}
+                نوبت {unitLookupWeek.labelFa}
               </span>
               <strong>واحد {toPersianDigits(selectedUnit)}</strong>
               <p>
@@ -310,7 +329,7 @@ function App() {
       <nav className="week-navigation" aria-label="جابجایی بین هفته‌ها">
         <button
           type="button"
-          onClick={() => setRelativeWeekOffset((offset) => offset - 1)}
+          onClick={() => setCalendarWeekOffset((offset) => offset - 1)}
         >
           هفته قبل
         </button>
@@ -318,13 +337,13 @@ function App() {
           className="week-navigation__current"
           type="button"
           disabled={displayedWeek.isCurrentWeek}
-          onClick={() => setRelativeWeekOffset(0)}
+          onClick={() => setCalendarWeekOffset(0)}
         >
           هفته جاری
         </button>
         <button
           type="button"
-          onClick={() => setRelativeWeekOffset((offset) => offset + 1)}
+          onClick={() => setCalendarWeekOffset((offset) => offset + 1)}
         >
           هفته بعد
         </button>
