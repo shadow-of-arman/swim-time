@@ -302,3 +302,54 @@ Build a read-only current-week interface using the verified domain modules. Show
 ### Next recommended task
 
 Add pure helpers for Tehran time-of-day, active-period detection, and the next upcoming period. Cover before-opening, between-period, active-period, after-closing, Friday-to-Saturday rollover, and cleaning periods with tests. Then highlight today and the active period and show a concise Persian next-period card in both responsive layouts. Keep navigation and unit lookup for later runs.
+
+## 2026-07-23 - Run 7: Current and next period status
+
+### Steps taken
+
+- Read the current README, implementation plan, handoff, and complete run log before making changes.
+- Inspected the latest commits and the current application, schedule, Tehran-time, and resolved-schedule modules.
+- Extended `src/domain/tehranTime.ts` with validated Tehran hour, minute, second, and minutes-since-midnight extraction.
+- Added `src/domain/scheduleStatus.ts` with displayed-week validation, current-day detection, active-period detection, next-period search across later periods and days, and reusable position matching.
+- Added tests for before-opening, active periods, gaps between periods, after-closing rollover to the next day, cleaning periods, the final Friday period, dates outside the displayed week, and invalid week starts.
+- Added a 30-second React clock refresh so the page updates period states and Saturday rollover while left open.
+- Added Persian current-period and next-period summary cards.
+- Highlighted today, the active period, and the next period in both mobile cards and the desktop table.
+- Expanded the schedule legend and added accessible `aria-current` and live-region status markup.
+- Updated responsive styling for the new status cards and highlighted states.
+- Updated the README and handoff documentation.
+
+### Verification
+
+- Compiled the new Tehran time-of-day and schedule-status modules with TypeScript 5.8.3 under strict settings against compatible domain modules.
+- Ran Node.js 22 runtime checks for before-opening, active, between-period, after-closing, cleaning, and final-Friday cases; all expected positions matched.
+- Confirmed `2026-07-18T04:30:45Z` extracts as 08:00:45 in Tehran with 480 minutes since midnight.
+- Performed a strict JSX type-check of the updated application with compatible React and domain declarations.
+- Fetched and reviewed the committed domain, application, and CSS files after implementation.
+- Confirmed all new user-facing text is Persian and current/next time ranges remain RTL-safe.
+- Actual repository dependency installation, Vitest execution, linting, Vite production build, and browser rendering remain pending because the GitHub connector does not provide a repository shell or deployed preview.
+
+### Decisions
+
+- Keep active and next-period calculations in a pure domain module so future week navigation can reuse the outside-week behavior.
+- Treat a period as active from its start minute up to, but not including, its end minute.
+- Treat gaps between periods as inactive and select the next period by its future start time.
+- Search for the next period only within the displayed Saturday-to-Friday week; after Friday closing, direct the user to the next week.
+- Refresh the clock every 30 seconds instead of every render or every second.
+- Keep current and next states visually distinct but restrained.
+
+### Issues
+
+- A repository shell and deployed preview remain unavailable, so the complete project has not yet been installed, built, or visually inspected in a browser.
+- The CSS and JSX were statically checked, but final responsive spacing should be confirmed after deployment.
+
+### Steps left
+
+- Add previous/current/next week navigation.
+- Add unit lookup with local persistence.
+- Add manual schedule overrides.
+- Add CI, deployment, browser verification, and final maintenance documentation.
+
+### Next recommended task
+
+Add previous/current/next week navigation. Store the displayed-week offset relative to the live Tehran week, calculate the displayed Saturday and unit rotation from that offset, and keep today/current/next highlighting visible only for the live week. Keep unit lookup and manual overrides for later runs.
