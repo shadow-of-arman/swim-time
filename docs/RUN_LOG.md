@@ -185,7 +185,7 @@ Implement a resolved schedule domain module. Private slot index 0 must map to un
 
 - Fetched and reviewed the new resolved-schedule module from `main` after committing it.
 - Compiled the module successfully with TypeScript 5.8.3 under strict settings against compatible schedule and Tehran-time modules.
-- Compiled the test source under strict settings using a temporary minimal Vitest declaration.
+- Compiled the test source under strict settings using a temporary minimal Vitest type declaration.
 - Ran Node.js 22 assertions confirming offset `0` produces `[39, 1, 2, ..., 38]` and offset `1` produces `[38, 39, 1, ..., 37]`.
 - Confirmed every unit appears exactly once at offsets `-80`, `-39`, `-1`, `0`, `1`, `39`, and `80`.
 - Confirmed date-based resolution for `2026-07-18T12:00:00Z` uses offset `1` and the second screenshot sequence.
@@ -209,3 +209,47 @@ Implement a resolved schedule domain module. Private slot index 0 must map to un
 ### Next recommended task
 
 Implement a separate Persian formatting module using the built-in Persian calendar in `Intl.DateTimeFormat`. Add Persian-digit conversion, concise and full Jalali date labels, and Saturday-to-Friday week-range labels for Gregorian `CalendarDate` values. Verify the two documented anchor Saturdays and month/year boundaries before beginning the full React schedule interface.
+
+## 2026-07-23 - Run 5: Persian date and number formatting
+
+### Steps taken
+
+- Read the current README, implementation plan, handoff, and complete run log before making changes.
+- Inspected the latest run commit and confirmed Persian formatting as the next coherent task.
+- Added `src/domain/persianFormatting.ts` using `Intl.DateTimeFormat` with the Persian calendar and UTC date-only conversion.
+- Added conversion from Latin and Arabic-Indic numerals to Persian digits.
+- Added structured Jalali date-part extraction with Persian month and weekday labels.
+- Added zero-padded numeric, concise, and full Persian date labels.
+- Added compact Saturday-to-Friday range labels for same-month, cross-month, and cross-year weeks.
+- Added validation that a weekly range begins on Saturday.
+- Added `src/domain/persianFormatting.test.ts` covering digit conversion, both documented anchor Saturdays, date labels, week ranges, month/year boundaries, and invalid week starts.
+- Updated the README and handoff documentation.
+
+### Verification
+
+- Fetched and reviewed the new formatting module from `main` after committing it.
+- Compiled the module successfully with TypeScript 5.8.3 under strict settings against compatible schedule and Tehran-time modules.
+- Compiled the test source under strict settings using a temporary minimal Vitest type declaration.
+- Ran Node.js 22 checks confirming `2026-07-11` formats as `۱۴۰۵/۰۴/۲۰` and `2026-07-18` as `۱۴۰۵/۰۴/۲۷`.
+- Confirmed concise and full labels such as `۲۰ تیر ۱۴۰۵` and `شنبه ۲۰ تیر ۱۴۰۵`.
+- Confirmed the two week ranges are `۲۰ تا ۲۶ تیر ۱۴۰۵` and `۲۷ تیر تا ۲ مرداد ۱۴۰۵`.
+- Confirmed Tir-to-Mordad and 1404-to-1405 boundaries without visitor-local timezone drift.
+- The actual repository Vitest suite, dependency installation, linting, and Vite production build remain pending because the GitHub connector does not provide a repository shell.
+
+### Decisions
+
+- Use the platform Persian calendar through `Intl` instead of adding a Jalali dependency.
+- Convert date-only Gregorian values at UTC midnight and explicitly format in UTC.
+- Assemble labels from structured parts to avoid locale-dependent punctuation and ordering.
+- Keep formatting utilities independent of React so they can be reused by the schedule header, daily cards, grid, and unit lookup.
+
+### Steps left
+
+- Replace the placeholder with the responsive current-week schedule interface.
+- Add current-period and next-period behavior.
+- Add previous/current/next week navigation and unit lookup.
+- Add manual overrides, CI, deployment, and final documentation.
+
+### Next recommended task
+
+Build a read-only current-week interface using the verified domain modules. Show a Persian week-range header, Persian date for each day, mobile day cards, and a desktop schedule grid. Keep navigation, unit lookup, active-period highlighting, and overrides for later runs.
