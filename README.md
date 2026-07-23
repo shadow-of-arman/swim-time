@@ -1,6 +1,6 @@
 # Swimming Pool Time
 
-A small Persian-first website for showing the apartment swimming-pool schedule. The website must be fully usable in Persian, follow RTL layout conventions, use Tehran time, and calculate the correct weekly rotation automatically every Saturday.
+A small Persian-first website for showing the Arghavan Tower swimming-pool schedule. The website must be fully usable in Persian, follow RTL layout conventions, use Tehran time, and calculate the correct weekly rotation automatically every Saturday.
 
 ## Product requirements
 
@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Static delivery and maintenance documentation complete; workflow, hosted-browser, and final MVP verification remain.
+**Phase:** Live on GitHub Pages; Arghavan Tower branding and calendar-adjacent week navigation are implemented.
 
 ### Completed
 
@@ -64,18 +64,23 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Configured Vite to generate portable relative asset paths for static hosting below any URL path.
 - [x] Added a host-neutral workflow that builds and uploads the `dist/` directory as a downloadable static-site artifact.
 - [x] Added static artifact deployment, responsive release-check, maintenance, dependency-update, and rollback instructions.
+- [x] Generated and committed a verified npm lockfile and switched automated installs to `npm ci`.
+- [x] Published the site through GitHub Pages.
+- [x] Branded the interface for برج ارغوان and moved week navigation directly above the schedule.
 
 ### Remaining
 
-- [ ] Confirm the GitHub Actions verification and static-artifact workflows pass and resolve any reported failures.
-- [ ] Generate and commit a lockfile through a verified dependency installation if feasible.
-- [ ] Publish a hosted preview after confirming the available static-host option for this private repository.
-- [ ] Perform final responsive browser verification and mark the MVP complete.
+- [ ] Confirm `Repository checks`, `Static site artifact`, and `Deploy GitHub Pages` pass after the latest interface update.
+- [ ] Perform final mobile and desktop browser verification of the live Arghavan Tower layout and mark the MVP complete.
+
+## Live site
+
+`https://shadow-of-arman.github.io/swimming-pool-time/`
 
 ## Local development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -92,7 +97,7 @@ npm run build
 
 The `Static site artifact` workflow runs on pushes to `main` and can also be started manually. It builds the application and uploads the complete `dist/` directory as the artifact `swimming-pool-time-static` for 14 days.
 
-The artifact is host-neutral and can be extracted into the document root of any static hosting provider. Vite uses relative asset paths, so the same build can be hosted at a root domain or a nested path without rebuilding.
+The `Deploy GitHub Pages` workflow publishes the production build to the live URL above. Vite uses relative asset paths, so the same build can also be hosted at a root domain or a nested path without rebuilding.
 
 See `docs/DELIVERY.md` for the full release, hosting, maintenance, browser-verification, and rollback procedure.
 
