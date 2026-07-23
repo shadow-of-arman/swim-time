@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Core schedule, week navigation, and unit lookup complete; automated repository verification is next.
+**Phase:** Repository CI workflow added; automated result confirmation and static deployment are next.
 
 ### Completed
 
@@ -60,11 +60,13 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Added displayed-week unit lookup summaries and selected-unit highlighting on mobile and desktop.
 - [x] Added tests for unit validation, persistence failures, and schedule-position lookup.
 - [x] Confirmed manual schedule overrides are out of scope and removed the unused implementation.
+- [x] Added a GitHub Actions workflow for dependency installation, linting, type checking, tests, and the production build.
 
 ### Remaining
 
-- [ ] Add GitHub Actions for build and tests.
-- [ ] Add deployment configuration and final documentation.
+- [ ] Confirm the first GitHub Actions run passes and resolve any reported failures.
+- [ ] Generate and commit a lockfile through a verified dependency installation if feasible.
+- [ ] Add static deployment configuration and final documentation.
 
 ## Local development
 
