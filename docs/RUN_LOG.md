@@ -166,3 +166,46 @@ Implement Tehran-time primitives using `Intl.DateTimeFormat` and UTC-safe date a
 ### Next recommended task
 
 Implement a resolved schedule domain module. Private slot index 0 must map to unit 39 at week offset 0 and unit 38 at week offset 1, with all other assignments wrapping through units 1 to 39 by positive modulo. Add tests proving every unit appears exactly once and the anchor-week sequences match both screenshots before beginning the UI.
+
+## 2026-07-23 - Run 4: Unit rotation and resolved schedules
+
+### Steps taken
+
+- Read the current README, implementation plan, handoff, and complete run log before making changes.
+- Inspected the latest run commit and the current fixed-schedule and Tehran-time modules.
+- Added `src/domain/resolvedSchedule.ts` with validated positive-modulo arithmetic.
+- Added private-slot-to-unit mapping using `positiveModulo(privateSlotIndex - weekOffset - 1, 39) + 1`.
+- Added complete weekly schedule resolution while preserving the existing public and cleaning slot objects.
+- Added date-based schedule resolution through the previously verified Tehran week-offset function.
+- Added private-unit sequence extraction for testing and later lookup features.
+- Added `src/domain/resolvedSchedule.test.ts` covering modulo wrapping, anchor mappings, both complete screenshot sequences, positive and negative offsets, preservation of fixed slots, date-based resolution, and invalid inputs.
+- Updated the README and handoff documentation.
+
+### Verification
+
+- Fetched and reviewed the new resolved-schedule module from `main` after committing it.
+- Compiled the module successfully with TypeScript 5.8.3 under strict settings against compatible schedule and Tehran-time modules.
+- Compiled the test source under strict settings using a temporary minimal Vitest declaration.
+- Ran Node.js 22 assertions confirming offset `0` produces `[39, 1, 2, ..., 38]` and offset `1` produces `[38, 39, 1, ..., 37]`.
+- Confirmed every unit appears exactly once at offsets `-80`, `-39`, `-1`, `0`, `1`, `39`, and `80`.
+- Confirmed date-based resolution for `2026-07-18T12:00:00Z` uses offset `1` and the second screenshot sequence.
+- The actual repository Vitest suite, dependency installation, linting, and Vite production build remain pending because the GitHub connector does not provide a repository shell.
+
+### Decisions
+
+- Keep unit rotation as a pure domain function independent of React and display formatting.
+- Validate all modulo values, divisors, private indexes, and week offsets instead of silently accepting fractional or out-of-range values.
+- Preserve public and cleaning objects by reference and create new objects only for private periods that receive unit numbers.
+- Expose a date-based resolver so the future UI does not need to reproduce timezone or rotation logic.
+
+### Steps left
+
+- Add Jalali date and Persian-digit formatting.
+- Build the responsive Persian schedule interface and week header.
+- Add current-period and next-period behavior.
+- Add previous/current/next week navigation and unit lookup.
+- Add manual overrides, CI, deployment, and final documentation.
+
+### Next recommended task
+
+Implement a separate Persian formatting module using the built-in Persian calendar in `Intl.DateTimeFormat`. Add Persian-digit conversion, concise and full Jalali date labels, and Saturday-to-Friday week-range labels for Gregorian `CalendarDate` values. Verify the two documented anchor Saturdays and month/year boundaries before beginning the full React schedule interface.
