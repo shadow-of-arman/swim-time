@@ -2,7 +2,7 @@
 
 ## Current state
 
-The project foundation, fixed weekly schedule model, Tehran date primitives, 39-unit rotation engine, Persian formatting utilities, responsive schedule interface, live current/next period behavior, and week navigation are now present on `main`. The application calculates the live Tehran week at runtime, refreshes every 30 seconds, and lets the user browse earlier or later weeks while keeping unit rotation and Persian dates correct.
+The project foundation, fixed weekly schedule model, Tehran date primitives, 39-unit rotation engine, Persian formatting utilities, responsive schedule interface, live current/next period behavior, week navigation, and persisted unit lookup are now present on `main`. The application calculates the live Tehran week at runtime, refreshes every 30 seconds, lets the user browse earlier or later weeks, and shows the selected apartment unit's correct private period for every displayed week.
 
 ## Confirmed decisions
 
@@ -23,14 +23,18 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, 39-
 - Live schedule status is calculated through pure domain helpers rather than inside React markup.
 - Browsed weeks are stored as an integer offset relative to the live Tehran week.
 - Today, active-period, and next-period states appear only when the displayed week is the live week.
+- A selected unit is stored as a canonical integer string in local storage under `swimming-pool:selected-unit`.
+- Missing, malformed, blocked, or unavailable local storage never prevents the schedule from loading.
+- Unit lookup is performed against the currently displayed week's resolved rotation, not only the live week.
 
 ## Current architecture
 
 - `index.html`: Persian metadata, RTL document direction, page title, theme metadata, and font loading.
-- `src/main.tsx`: guarded React root setup and imports for global and navigation styles.
-- `src/App.tsx`: live clock refresh, relative displayed-week state, week navigation controls, schedule resolution, Persian headers, live status summaries, mobile day cards, and desktop schedule table.
+- `src/main.tsx`: guarded React root setup and imports for global, navigation, and unit-lookup styles.
+- `src/App.tsx`: live clock refresh, relative displayed-week state, persisted unit state, week navigation controls, schedule resolution, unit lookup summary, Persian headers, live status summaries, selected-unit highlighting, mobile day cards, and desktop schedule table.
 - `src/index.css`: responsive RTL styling, status cards, schedule cards, desktop table, today/active/next states, semantic period treatments, and accessibility helpers.
 - `src/navigation.css`: previous/current/next week controls and the non-live-week information panel.
+- `src/unitLookup.css`: unit selector, selected-unit summary, responsive layout, legend marker, and selected mobile/desktop schedule outlines.
 - `src/domain/schedule.ts`: strongly typed fixed schedule model and runtime validation for exactly 39 private periods.
 - `src/domain/schedule.test.ts`: structural schedule tests.
 - `src/domain/tehranTime.ts`: Tehran Gregorian date extraction, Tehran hour/minute/second extraction, Saturday-first mapping, latest-Saturday calculation, and anchor week offsets.
@@ -43,6 +47,8 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, 39-
 - `src/domain/scheduleStatus.test.ts`: before-opening, active, gap, after-closing, cleaning, end-of-week, outside-week, and invalid-start tests.
 - `src/domain/weekNavigation.ts`: displayed-week Saturday calculation, anchor rotation offset calculation, current-week detection, and Persian relative-week labels.
 - `src/domain/weekNavigation.test.ts`: current/previous/next selection, Gregorian boundary, Persian label, and invalid-offset tests.
+- `src/domain/unitLookup.ts`: unit validation, safe local-storage read/write helpers, malformed-value cleanup, and lookup of a unit's private schedule position.
+- `src/domain/unitLookup.test.ts`: unit range, stored-value parsing, blocked-storage recovery, anchor lookup, later-day lookup, browsed-week rotation, and invalid-unit tests.
 - `package.json`: Vite, React, TypeScript, ESLint, and Vitest scripts and dependencies.
 - `tsconfig*.json`: strict application and tooling TypeScript configurations.
 - `eslint.config.js`: flat ESLint configuration for TypeScript and React hooks.
@@ -53,6 +59,10 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, 39-
 - The header shows the Persian Saturday-to-Friday range for the displayed week and identifies it as the current, previous, next, or a more distant week.
 - Persian buttons move backward one week, return to the live week, or move forward one week.
 - The correct 39-unit rotation is recalculated for every browsed week.
+- A selector lists apartment units 1 through 39 with Persian display digits.
+- A valid selected unit is restored on later visits when local storage is available.
+- The selected unit summary shows its Persian weekday, Jalali date, and RTL-safe time range for the displayed week.
+- The selected unit receives a restrained outline in both mobile cards and the desktop table.
 - A non-live-week notice explains that live status is only available for the current week.
 - The current-period and next-period cards, today marker, and active/next highlights are hidden outside the live week.
 - The page refreshes its current time every 30 seconds so period states and Saturday rollover update while it remains open.
@@ -79,11 +89,11 @@ After implementation, each run must update the README status, append to the run 
 
 ## Verification performed
 
-- `src/domain/weekNavigation.ts` compiled with TypeScript 5.8.3 under strict settings against compatible dependency declarations.
-- Node.js 22 runtime assertions confirmed previous/next Saturdays, anchor rotation offsets, Gregorian month/year crossings, and Persian labels for larger offsets.
-- The committed application was reviewed to confirm displayed-week rotation uses `liveWeekOffset + relativeWeekOffset` and displayed dates use the selected Saturday.
-- The existing outside-week schedule-status behavior ensures live highlighting is absent while browsing other weeks.
-- All newly added user-facing text is Persian, and navigation buttons retain keyboard focus styling.
+- `src/domain/unitLookup.ts` compiled with TypeScript 5.8.3 under strict settings against compatible schedule, resolved-schedule, and Tehran-date declarations.
+- Node.js 22 runtime checks confirmed canonical stored-value parsing, persistence and clearing, anchor-week unit 39 lookup, and Sunday unit 6 date lookup.
+- The new Vitest source covers valid and invalid units, malformed stored values, blocked storage, persistence, anchor positions, later days, and browsed-week rotation.
+- The committed application, unit lookup stylesheet, domain helper, test source, and main style import were fetched and reviewed after implementation.
+- All newly added user-facing text is Persian, unit options use Persian display digits, and date/time output remains RTL-safe.
 - Full repository dependency installation, actual Vitest execution, linting, Vite production build, and browser rendering remain pending because the GitHub connector does not provide a repository shell or deployed preview.
 
 ## Known uncertainties and issues
@@ -92,8 +102,9 @@ After implementation, each run must update the README status, append to the run 
 - Full repository dependency installation, linting, Vitest execution, and Vite production build remain pending.
 - No lockfile exists yet. A future CI or shell-enabled run should generate and commit it if appropriate.
 - Visual browser rendering has not yet been inspected through a deployed preview.
-- Week navigation is intentionally unbounded. This keeps the implementation simple, but very distant weeks still depend on the inferred rotation remaining valid indefinitely.
+- Week navigation is intentionally unbounded. Very distant weeks depend on the inferred rotation remaining valid unless an override replaces that week's generated schedule.
+- When local storage is blocked, unit selection still works during the current page session but cannot persist across visits.
 
 ## Exact next recommended task
 
-Add unit lookup with local persistence as a focused domain-plus-UI task. Let the user select a unit from 1 through 39, store the selection in `localStorage`, locate that unit's private period in the displayed week, and show a concise Persian summary with weekday, Jalali date, and time range. Highlight the selected unit in both mobile and desktop schedules. Validate stored values and recover safely from missing or malformed storage. Keep manual overrides for a later run.
+Add manual schedule overrides as a focused configuration-plus-domain task. Define a small typed configuration keyed by Gregorian Saturday strings such as `2026-07-18`, support explicit per-day and per-slot replacements after the generated rotation is resolved, and validate week keys, day/slot indexes, unit ranges, and the final one-through-39 unit invariant. Integrate override application into the displayed schedule before status and unit lookup are calculated. Add tests for an empty configuration, a two-unit swap, a public or cleaning replacement, invalid indexes, duplicate units, and a browsed week with no override. Do not add CI or deployment in the same run.
