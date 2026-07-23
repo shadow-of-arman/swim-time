@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Tehran date and Saturday-week primitives complete; unit rotation is next.
+**Phase:** Weekly unit rotation and resolved schedule complete; Persian date formatting is next.
 
 ### Completed
 
@@ -35,17 +35,19 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Implemented Saturday-first weekday mapping and latest-Saturday calculation.
 - [x] Implemented whole-week offsets from the Gregorian anchor Saturday `2026-07-11`.
 - [x] Added rollover and UTC-safe date-arithmetic tests.
+- [x] Implemented positive-modulo rotation for all 39 apartment units.
+- [x] Implemented resolved weekly schedules that preserve public and cleaning periods.
+- [x] Verified every unit appears exactly once for positive and negative week offsets.
+- [x] Added tests matching the complete private-unit sequences in both supplied screenshots.
 
 ### Remaining
 
-- [ ] Implement the 39-unit rotation engine and resolved weekly schedule.
 - [ ] Add Jalali date formatting and Persian digit formatting.
 - [ ] Build the complete Persian RTL responsive schedule interface.
 - [ ] Add current-period and next-period highlighting.
 - [ ] Add unit lookup with local persistence.
 - [ ] Add previous/current/next week navigation.
 - [ ] Add manual override configuration.
-- [ ] Add tests matching the two supplied schedule screenshots.
 - [ ] Add GitHub Actions for build and tests.
 - [ ] Add deployment configuration and final documentation.
 
