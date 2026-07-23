@@ -448,3 +448,45 @@ Add a unit selector for units 1 through 39, persist a valid selection in `localS
 ### Next recommended task
 
 Add typed manual schedule overrides keyed by Gregorian Saturday strings, apply them after generated rotation resolution and before live status or unit lookup, and validate day/slot indexes plus the final one-through-39 private-unit invariant. Cover empty configuration, a two-unit swap, a public or cleaning replacement, invalid indexes, duplicate units, and a week with no override. Keep CI and deployment for later runs.
+
+## 2026-07-23 - Run 10: Repository CI workflow
+
+### Steps taken
+
+- Read the current README, implementation plan, handoff, and complete run log before making changes.
+- Inspected the latest commits and confirmed automated repository verification as the next unfinished task.
+- Added `.github/workflows/ci.yml` for pushes to `main` and pull requests.
+- Configured Node.js 22.16.0, dependency installation, linting, type checking, Vitest execution, and the Vite production build as separate workflow steps.
+- Added read-only repository permissions, a ten-minute job timeout, and per-ref concurrency cancellation.
+- Kept the fixed rotation authoritative and made no manual-override, backend, or admin changes.
+- Updated the README and handoff documentation.
+
+### Verification
+
+- Fetched and reviewed the committed workflow against the scripts in `package.json`.
+- Parsed the workflow YAML locally and confirmed all seven expected steps are present.
+- Confirmed the repository has no lockfile, so the workflow intentionally uses `npm install` rather than `npm ci`.
+- Could not inspect the push-triggered Actions result because the available GitHub connector only exposed pull-request-associated workflow runs.
+- Could not generate a lockfile locally because the available environment could not reach the npm registry and did not have a repository shell.
+
+### Decisions
+
+- Use one verification job with separate commands so failures identify the affected stage clearly.
+- Pin CI to Node.js 22.16.0, matching the available verification environment and satisfying the current Vite toolchain.
+- Avoid npm caching until a verified lockfile exists.
+- Keep workflow permissions read-only because CI does not need to modify the repository.
+
+### Issues
+
+- The first GitHub Actions result still needs confirmation through the Actions interface or a connector that exposes push-triggered runs.
+- Browser rendering remains unverified until static deployment is available.
+
+### Steps left
+
+- Confirm CI passes and fix any reported lint, type-check, test, or build failure.
+- Generate and commit a lockfile through a verified dependency installation if feasible.
+- Add static deployment configuration and final maintenance documentation.
+
+### Next recommended task
+
+Add static deployment configuration without adding external secrets or server infrastructure. Prefer GitHub Pages only when it is supported for this private repository; otherwise produce a host-neutral build artifact and document the remaining hosting setup. Inspect the first CI result if it becomes accessible before marking automated verification complete.
