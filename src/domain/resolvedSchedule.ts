@@ -1,4 +1,3 @@
-import { SCHEDULE_OVERRIDES } from '../config/scheduleOverrides'
 import {
   UNIT_COUNT,
   WEEKLY_SCHEDULE,
@@ -8,13 +7,7 @@ import {
   type PublicSlotDefinition,
   type ScheduleSlotDefinition,
 } from './schedule'
-import { applyScheduleOverrides } from './scheduleOverrides'
-import {
-  addCalendarDays,
-  ANCHOR_SATURDAY,
-  DAYS_PER_WEEK,
-  getWeekOffsetFromAnchor,
-} from './tehranTime'
+import { getWeekOffsetFromAnchor } from './tehranTime'
 
 export interface ResolvedPrivateSlotDefinition
   extends PrivateSlotDefinition {
@@ -86,7 +79,13 @@ function resolveSlot(
   }
 }
 
-function generateWeeklySchedule(weekOffset: number): ResolvedWeeklySchedule {
+export function resolveWeeklySchedule(
+  weekOffset: number,
+): ResolvedWeeklySchedule {
+  if (!Number.isInteger(weekOffset)) {
+    throw new Error(`Week offset must be an integer: ${weekOffset}`)
+  }
+
   return {
     weekOffset,
     days: WEEKLY_SCHEDULE.map(
@@ -96,26 +95,6 @@ function generateWeeklySchedule(weekOffset: number): ResolvedWeeklySchedule {
       }),
     ),
   }
-}
-
-export function resolveWeeklySchedule(
-  weekOffset: number,
-): ResolvedWeeklySchedule {
-  if (!Number.isInteger(weekOffset)) {
-    throw new Error(`Week offset must be an integer: ${weekOffset}`)
-  }
-
-  const generatedSchedule = generateWeeklySchedule(weekOffset)
-  const weekStart = addCalendarDays(
-    ANCHOR_SATURDAY,
-    weekOffset * DAYS_PER_WEEK,
-  )
-
-  return applyScheduleOverrides(
-    weekStart,
-    generatedSchedule,
-    SCHEDULE_OVERRIDES,
-  )
 }
 
 export function resolveWeeklyScheduleForDate(
