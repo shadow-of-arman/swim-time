@@ -19,11 +19,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Apply interface and documentation updates
+      - name: Apply interface updates
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           def replace_once(path: str, old: str, new: str) -> None:
               file_path = Path(path)
@@ -35,41 +36,30 @@ jobs:
 
           app_path = Path('src/App.tsx')
           app = app_path.read_text(encoding='utf-8')
-          nav = '''      <nav className="week-navigation" aria-label="جابجایی بین هفته‌ها">
-                <button
-                  type="button"
-                  onClick={() => setRelativeWeekOffset((offset) => offset - 1)}
-                >
-                  هفته قبل
-                </button>
-                <button
-                  className="week-navigation__current"
-                  type="button"
-                  disabled={displayedWeek.isCurrentWeek}
-                  onClick={() => setRelativeWeekOffset(0)}
-                >
-                  هفته جاری
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRelativeWeekOffset((offset) => offset + 1)}
-                >
-                  هفته بعد
-                </button>
-              </nav>'''
-          if app.count(nav) != 1:
-              raise SystemExit(f'src/App.tsx: expected one navigation block, found {app.count(nav)}')
-          app = app.replace(nav + '\n\n', '', 1)
-          marker = '      </ul>\n\n      <section className="mobile-schedule"'
-          if app.count(marker) != 1:
-              raise SystemExit(f'src/App.tsx: expected one schedule marker, found {app.count(marker)}')
+          navigation_pattern = re.compile(
+              r'      <nav className="week-navigation" aria-label="جابجایی بین هفته‌ها">.*?      </nav>\n\n',
+              re.DOTALL,
+          )
+          navigation_match = navigation_pattern.search(app)
+          if navigation_match is None:
+              raise SystemExit('src/App.tsx: week navigation block not found')
+          navigation = navigation_match.group(0).rstrip()
+          app = navigation_pattern.sub('', app, count=1)
+
+          schedule_marker = '      </ul>\n\n      <section className="mobile-schedule"'
+          if app.count(schedule_marker) != 1:
+              raise SystemExit('src/App.tsx: schedule insertion marker mismatch')
           app = app.replace(
-              marker,
-              '      </ul>\n\n' + nav + '\n\n      <section className="mobile-schedule"',
+              schedule_marker,
+              '      </ul>\n\n' + navigation + '\n\n      <section className="mobile-schedule"',
               1,
           )
+
+          old_eyebrow = '<p className="eyebrow">استخر ساختمان</p>'
+          if app.count(old_eyebrow) != 1:
+              raise SystemExit('src/App.tsx: building eyebrow mismatch')
           app = app.replace(
-              '<p className="eyebrow">استخر ساختمان</p>',
+              old_eyebrow,
               '<p className="eyebrow">برج ارغوان</p>',
               1,
           )
@@ -96,184 +86,7 @@ jobs:
               'run: npm ci --no-audit --no-fund',
           )
 
-          readme = Path('README.md').read_text(encoding='utf-8')
-          readme = readme.replace(
-              'A small Persian-first website for showing the apartment swimming-pool schedule.',
-              'A small Persian-first website for showing the Arghavan Tower swimming-pool schedule.',
-              1,
-          )
-          readme = readme.replace(
-              '**Phase:** Static delivery and maintenance documentation complete; workflow, hosted-browser, and final MVP verification remain.',
-              '**Phase:** Live on GitHub Pages; Arghavan Tower branding and calendar-adjacent week navigation are implemented.',
-              1,
-          )
-          completed_anchor = '- [x] Added static artifact deployment, responsive release-check, maintenance, dependency-update, and rollback instructions.\n'
-          completed_addition = completed_anchor + '- [x] Generated and committed a verified npm lockfile and switched automated installs to `npm ci`.\n- [x] Published the site through GitHub Pages at `https://shadow-of-arman.github.io/swimming-pool-time/`.\n- [x] Branded the interface for برج ارغوان and moved week navigation directly above the schedule.\n'
-          if readme.count(completed_anchor) != 1:
-              raise SystemExit('README.md: completed anchor mismatch')
-          readme = readme.replace(completed_anchor, completed_addition, 1)
-          old_remaining = '''- [ ] Confirm the GitHub Actions verification and static-artifact workflows pass and resolve any reported failures.
-          - [ ] Generate and commit a lockfile through a verified dependency installation if feasible.
-          - [ ] Publish a hosted preview after confirming the available static-host option for this private repository.
-          - [ ] Perform final responsive browser verification and mark the MVP complete.'''
-          new_remaining = '''- [ ] Confirm `Repository checks`, `Static site artifact`, and `Deploy GitHub Pages` pass after the latest interface update.
-          - [ ] Perform final mobile and desktop browser verification of the live Arghavan Tower layout and mark the MVP complete.'''
-          if readme.count(old_remaining) != 1:
-              raise SystemExit('README.md: remaining section mismatch')
-          readme = readme.replace(old_remaining, new_remaining, 1)
-          static_heading = '## Static delivery\n\n'
-          static_intro = '## Static delivery\n\nLive site: `https://shadow-of-arman.github.io/swimming-pool-time/`\n\n'
-          if readme.count(static_heading) != 1:
-              raise SystemExit('README.md: static delivery heading mismatch')
-          readme = readme.replace(static_heading, static_intro, 1)
-          Path('README.md').write_text(readme, encoding='utf-8')
-
-          delivery = Path('docs/DELIVERY.md').read_text(encoding='utf-8')
-          current_deployment = '''## Current deployment
-
-          - Host: GitHub Pages
-          - Production URL: `https://shadow-of-arman.github.io/swimming-pool-time/`
-          - Source branch: `main`
-          - Deployment workflow: `Deploy GitHub Pages`
-          - The repository owner confirmed the site was live on 2026-07-23.
-
-          '''
-          scope_marker = '## Scope\n\n'
-          if delivery.count(scope_marker) != 1:
-              raise SystemExit('docs/DELIVERY.md: scope marker mismatch')
-          delivery = delivery.replace(scope_marker, current_deployment + scope_marker, 1)
-          delivery = delivery.replace('npm install\nnpm run lint', 'npm ci\nnpm run lint', 1)
-          delivery = delivery.replace(
-              'Until a verified `package-lock.json` is committed, use `npm install`. After a lockfile is generated and verified, CI and local release instructions should switch to `npm ci`.',
-              'A verified `package-lock.json` is committed. Use `npm ci` for clean local verification and automated builds; use `npm install` only when intentionally changing dependencies.',
-              1,
-          )
-          delivery = delivery.replace(
-              '- the final hosting location is recorded in this document or the README',
-              '- the final hosting location is recorded in this document or the README\n- the current branded header and calendar-adjacent week controls are verified after deployment',
-              1,
-          )
-          Path('docs/DELIVERY.md').write_text(delivery, encoding='utf-8')
-
-          handoff = '''# Handoff
-
-          ## Current state
-
-          The Persian-first swimming-pool schedule for برج ارغوان is live on GitHub Pages at `https://shadow-of-arman.github.io/swimming-pool-time/`. The Tehran-aware fixed rotation, responsive mobile and desktop schedules, live period status, week navigation, persisted unit lookup, verified npm lockfile, repository checks, portable static artifact, Pages deployment, and delivery-maintenance guide are present on `main`. Manual schedule overrides remain explicitly out of scope.
-
-          ## Confirmed decisions
-
-          - The public identity is برج ارغوان; the main page title remains برنامه هفتگی استخر.
-          - The website is Persian-first and fully RTL.
-          - Weeks begin on Saturday and use `Asia/Tehran` rather than the visitor's timezone.
-          - The MVP remains a static React, TypeScript, and Vite application with no backend.
-          - Resolved schedules are generated solely from the fixed anchor rotation.
-          - Manual schedule overrides are explicitly out of scope.
-          - A selected unit is stored under `swimming-pool:selected-unit`; storage failure is non-fatal.
-          - Browsed weeks use an integer offset relative to the live Tehran week.
-          - Week navigation is placed immediately above the mobile cards or desktop schedule table.
-          - A verified `package-lock.json` is committed and automated workflows use `npm ci`.
-          - Static production assets use relative URLs and the production site is deployed with GitHub Pages.
-
-          ## Current architecture
-
-          - `index.html`: Persian metadata, RTL direction, Arghavan Tower title and description, theme metadata, and font loading.
-          - `src/App.tsx`: Arghavan Tower header, live clock, selected-unit persistence, status summaries, schedule legend, calendar-adjacent week navigation, and responsive schedule rendering.
-          - `src/index.css`, `src/navigation.css`, `src/unitLookup.css`: modest responsive RTL presentation and state highlighting.
-          - `src/domain/`: fixed schedule, Tehran date/time, unit rotation, Persian formatting, live status, navigation, and unit lookup modules with matching tests.
-          - `vite.config.ts`: React plugin and portable `./` production base path.
-          - `package-lock.json`: verified dependency lockfile.
-          - `.github/workflows/ci.yml`: lint, type-check, Vitest, and production-build verification.
-          - `.github/workflows/static-site.yml`: portable `dist/` artifact generation.
-          - `.github/workflows/pages.yml`: GitHub Pages build and deployment.
-          - `docs/DELIVERY.md`: production URL, release checks, schedule maintenance, dependency updates, rollback, and final sign-off.
-
-          ## Interface behavior
-
-          - The header identifies the building as برج ارغوان.
-          - The current Tehran week is calculated automatically and updates while the page remains open.
-          - Users can browse previous and later weeks; the controls sit directly above the schedule.
-          - Today, active-period, and next-period states appear only for the live week.
-          - Users can select a unit, persist it locally, view its date/time summary, and see it highlighted in either responsive layout.
-          - Every displayed schedule comes directly from the same fixed rotation formula.
-
-          ## Verification performed
-
-          - Read the current README and every file under `docs/` before implementation.
-          - Inspected the latest repository commits, verified lockfile, CI workflow, static-artifact workflow, and Pages deployment workflow.
-          - The repository owner confirmed the production URL was live before this customization.
-          - The customization performs validated single-match transformations and fails rather than silently editing an unexpected structure.
-          - The updated commit triggers repository checks, artifact generation, and Pages deployment; their latest results and the redeployed browser layout still require confirmation.
-          - The available connector cannot independently render the GitHub Pages site or expose push-triggered workflow logs.
-
-          ## Known uncertainties and issues
-
-          - The rotation rule is inferred from two screenshots and is assumed to continue indefinitely, as requested.
-          - The latest workflows must be confirmed after the branding and navigation-layout commit.
-          - The redeployed page should be checked around 390-pixel and 1440-pixel widths.
-          - Week navigation remains intentionally unbounded.
-          - When local storage is blocked, unit selection cannot persist across page reloads.
-
-          ## Exact next recommended task
-
-          After GitHub Pages redeploys, confirm `Repository checks`, `Static site artifact`, and `Deploy GitHub Pages` are green. Open the live site at representative mobile and desktop widths and verify the برج ارغوان header, the week-navigation controls immediately above the schedule, Persian RTL layout, Tehran week behavior, and unit lookup. Record the result and mark the MVP complete if all checks pass. Do not add a backend, admin dashboard, secrets, or manual schedule overrides.
-          '''
-          Path('docs/HANDOFF.md').write_text(
-              '\n'.join(line[10:] if line.startswith('          ') else line for line in handoff.splitlines()) + '\n',
-              encoding='utf-8',
-          )
-
-          run_entry = '''
-
-          ## 2026-07-23 - Run 13: Arghavan Tower branding and calendar navigation placement
-
-          ### Steps taken
-
-          - Read the current README and every file under `docs/` before making changes.
-          - Inspected the latest commits, verified lockfile, CI configuration, static artifact workflow, and GitHub Pages workflow.
-          - Recorded the repository owner's confirmation that the site is live at `https://shadow-of-arman.github.io/swimming-pool-time/`.
-          - Replaced the generic building eyebrow with برج ارغوان and updated the browser title and description.
-          - Moved the previous/current/next week controls from below the page header to immediately above the responsive calendar.
-          - Reduced the controls' bottom spacing so they remain visually attached to the schedule.
-          - Switched the portable static-artifact workflow from `npm install` to `npm ci` now that a verified lockfile exists.
-          - Updated the README, delivery guide, and handoff documentation.
-
-          ### Verification
-
-          - Used guarded single-match transformations so the customization fails on unexpected source structures rather than making ambiguous edits.
-          - Confirmed the schedule engine, unit rotation, current-period behavior, and unit lookup code were not changed.
-          - Confirmed the week-navigation controls retain their existing handlers, disabled current-week state, and Persian labels.
-          - Confirmed the live URL, lockfile, and Pages workflow exist in the repository.
-          - The final commit triggers all automated workflows, but their push-triggered results are not visible through the available connector.
-          - The newly deployed layout still requires a real browser check after GitHub Pages finishes publishing.
-
-          ### Decisions
-
-          - Use برج ارغوان as the smaller building identity above the existing برنامه هفتگی استخر heading.
-          - Keep navigation after the schedule legend and directly before both responsive calendar presentations.
-          - Keep the visual change small and avoid redesigning the existing schedule interface.
-
-          ### Issues
-
-          - The production page may briefly show the previous layout until GitHub Pages completes the new deployment.
-          - Mobile and desktop browser verification remains required after deployment.
-
-          ### Steps left
-
-          - Confirm `Repository checks`, `Static site artifact`, and `Deploy GitHub Pages` pass for the customization commit.
-          - Verify the live header and calendar-adjacent navigation around 390-pixel and 1440-pixel widths.
-          - Mark the MVP complete after those checks pass.
-
-          ### Next recommended task
-
-          Verify the redeployed GitHub Pages site on mobile and desktop. Confirm برج ارغوان appears in the header and the three week controls sit immediately above the calendar without spacing or overflow problems. If all workflows and browser checks pass, record final sign-off and mark the MVP complete.
-          '''
-          run_entry = '\n'.join(line[10:] if line.startswith('          ') else line for line in run_entry.splitlines())
-          with Path('docs/RUN_LOG.md').open('a', encoding='utf-8') as run_log:
-              run_log.write(run_entry)
-
-          workflow_path = Path('.github/workflows/customize-arghavan-once.yml')
-          workflow_path.unlink()
+          Path('.github/workflows/customize-arghavan-once.yml').unlink()
           PY
 
       - name: Commit customization
