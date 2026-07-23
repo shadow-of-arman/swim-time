@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   formatJalaliConcise,
   formatJalaliWeekRange,
@@ -7,6 +8,11 @@ import {
   resolveWeeklySchedule,
   type ResolvedScheduleSlotDefinition,
 } from './domain/resolvedSchedule'
+import {
+  getDisplayedWeekStatus,
+  isSchedulePosition,
+  type ScheduleSlotPosition,
+} from './domain/scheduleStatus'
 import {
   PUBLIC_AUDIENCE_LABELS_FA,
   TIME_RANGES,
@@ -28,11 +34,38 @@ function getSlotLabel(slot: ResolvedScheduleSlotDefinition): string {
   }
 }
 
+function getPositionDetails(position: ScheduleSlotPosition) {
+  return {
+    slotLabel: getSlotLabel(position.slot),
+    dayLabel: position.day.labelFa,
+    dateLabel: formatJalaliConcise(position.date),
+    timeLabel: position.timeRange.labelFa,
+  }
+}
+
+function useCurrentTime(): Date {
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30_000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  return now
+}
+
 function App() {
-  const now = new Date()
+  const now = useCurrentTime()
   const weekStart = getLatestSaturdayInTehran(now)
   const weekOffset = getWeekOffsetFromAnchor(now)
   const schedule = resolveWeeklySchedule(weekOffset)
+  const status = getDisplayedWeekStatus(now, weekStart, schedule)
+  const activeDetails = status.activeSlot
+    ? getPositionDetails(status.activeSlot)
+    : null
+  const nextDetails = status.nextSlot
+    ? getPositionDetails(status.nextSlot)
+    : null
   const days = schedule.days.map((day) => {
     const date = addCalendarDays(weekStart, day.dayIndex)
 
@@ -61,6 +94,50 @@ function App() {
         </div>
       </header>
 
+      <section
+        className="period-status"
+        aria-label="وضعیت نوبت‌های استخر"
+        aria-live="polite"
+      >
+        <article className="period-card period-card--current">
+          <span className="period-card__label">نوبت در حال اجرا</span>
+          <strong>
+            {activeDetails?.slotLabel ?? 'در حال حاضر نوبتی در جریان نیست'}
+          </strong>
+          {activeDetails ? (
+            <p className="period-card__meta">
+              {activeDetails.dayLabel}، {activeDetails.dateLabel}
+              <bdi className="period-card__time" dir="rtl">
+                {activeDetails.timeLabel}
+              </bdi>
+            </p>
+          ) : (
+            <p className="period-card__meta">
+              {nextDetails
+                ? 'در فاصله بین نوبت‌ها یا پیش از شروع برنامه روزانه هستید.'
+                : 'برنامه این هفته به پایان رسیده است.'}
+            </p>
+          )}
+        </article>
+
+        <article className="period-card period-card--next">
+          <span className="period-card__label">نوبت بعدی</span>
+          <strong>
+            {nextDetails?.slotLabel ?? 'نوبت دیگری در این هفته باقی نمانده است'}
+          </strong>
+          {nextDetails ? (
+            <p className="period-card__meta">
+              {nextDetails.dayLabel}، {nextDetails.dateLabel}
+              <bdi className="period-card__time" dir="rtl">
+                {nextDetails.timeLabel}
+              </bdi>
+            </p>
+          ) : (
+            <p className="period-card__meta">هفته بعد از روز شنبه آغاز می‌شود.</p>
+          )}
+        </article>
+      </section>
+
       <ul className="schedule-legend" aria-label="راهنمای برنامه">
         <li>
           <span className="legend-mark legend-mark--public" />
@@ -74,34 +151,67 @@ function App() {
           <span className="legend-mark legend-mark--cleaning" />
           نظافت
         </li>
+        <li>
+          <span className="legend-mark legend-mark--active" />
+          نوبت در حال اجرا
+        </li>
+        <li>
+          <span className="legend-mark legend-mark--next" />
+          نوبت بعدی
+        </li>
       </ul>
 
       <section className="mobile-schedule" aria-label="برنامه روزهای هفته">
-        {days.map((day) => (
-          <article className="day-card" key={day.key}>
-            <header className="day-card__header">
-              <h2>{day.labelFa}</h2>
-              <p>{day.dateLabel}</p>
-            </header>
+        {days.map((day) => {
+          const isToday = status.currentDayIndex === day.dayIndex
 
-            <div className="day-card__slots">
-              {day.slots.map((slot, slotIndex) => {
-                const timeRange = TIME_RANGES[slotIndex]
+          return (
+            <article
+              className={`day-card${isToday ? ' day-card--today' : ''}`}
+              key={day.key}
+              aria-current={isToday ? 'date' : undefined}
+            >
+              <header className="day-card__header">
+                <div className="day-card__title">
+                  <h2>{day.labelFa}</h2>
+                  {isToday ? <span className="today-badge">امروز</span> : null}
+                </div>
+                <p>{day.dateLabel}</p>
+              </header>
 
-                return (
-                  <div className="slot-row" key={timeRange.id}>
-                    <bdi className="slot-time" dir="rtl">
-                      {timeRange.labelFa}
-                    </bdi>
-                    <span className={`slot-value slot-value--${slot.kind}`}>
-                      {getSlotLabel(slot)}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </article>
-        ))}
+              <div className="day-card__slots">
+                {day.slots.map((slot, slotIndex) => {
+                  const timeRange = TIME_RANGES[slotIndex]
+                  const isActive = isSchedulePosition(
+                    status.activeSlot,
+                    day.dayIndex,
+                    slotIndex,
+                  )
+                  const isNext = isSchedulePosition(
+                    status.nextSlot,
+                    day.dayIndex,
+                    slotIndex,
+                  )
+
+                  return (
+                    <div
+                      className={`slot-row${isActive ? ' slot-row--active' : ''}${isNext ? ' slot-row--next' : ''}`}
+                      key={timeRange.id}
+                      aria-current={isActive ? 'time' : undefined}
+                    >
+                      <bdi className="slot-time" dir="rtl">
+                        {timeRange.labelFa}
+                      </bdi>
+                      <span className={`slot-value slot-value--${slot.kind}`}>
+                        {getSlotLabel(slot)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </article>
+          )
+        })}
       </section>
 
       <section className="desktop-schedule" aria-label="جدول برنامه هفتگی">
@@ -121,22 +231,54 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {days.map((day) => (
-                <tr key={day.key}>
-                  <th className="schedule-table__day" scope="row">
-                    <strong>{day.labelFa}</strong>
-                    <span>{day.dateLabel}</span>
-                  </th>
-                  {day.slots.map((slot, slotIndex) => (
-                    <td
-                      className={`schedule-cell schedule-cell--${slot.kind}`}
-                      key={`${day.key}-${TIME_RANGES[slotIndex].id}`}
+              {days.map((day) => {
+                const isToday = status.currentDayIndex === day.dayIndex
+
+                return (
+                  <tr
+                    className={isToday ? 'schedule-table__row--today' : undefined}
+                    key={day.key}
+                  >
+                    <th
+                      className="schedule-table__day"
+                      scope="row"
+                      aria-current={isToday ? 'date' : undefined}
                     >
-                      {getSlotLabel(slot)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+                      <div className="schedule-table__day-name">
+                        <strong>{day.labelFa}</strong>
+                        {isToday ? (
+                          <span className="table-today-badge">امروز</span>
+                        ) : null}
+                      </div>
+                      <span className="schedule-table__date">
+                        {day.dateLabel}
+                      </span>
+                    </th>
+                    {day.slots.map((slot, slotIndex) => {
+                      const isActive = isSchedulePosition(
+                        status.activeSlot,
+                        day.dayIndex,
+                        slotIndex,
+                      )
+                      const isNext = isSchedulePosition(
+                        status.nextSlot,
+                        day.dayIndex,
+                        slotIndex,
+                      )
+
+                      return (
+                        <td
+                          className={`schedule-cell schedule-cell--${slot.kind}${isActive ? ' schedule-cell--active' : ''}${isNext ? ' schedule-cell--next' : ''}`}
+                          key={`${day.key}-${TIME_RANGES[slotIndex].id}`}
+                          aria-current={isActive ? 'time' : undefined}
+                        >
+                          {getSlotLabel(slot)}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
