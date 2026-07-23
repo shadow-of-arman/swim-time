@@ -16,21 +16,26 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Repository initialized for scheduled implementation.
+**Phase:** Project foundation complete; schedule engine is next.
 
 ### Completed
 
-- [x] Confirmed the repository is empty and writable.
+- [x] Confirmed the repository is writable.
 - [x] Documented the inferred weekly schedule rotation.
 - [x] Defined the implementation phases and handoff process.
+- [x] Initialized React, TypeScript, and Vite.
+- [x] Added development, build, lint, type-check, preview, and test scripts.
+- [x] Set the document language and direction to Persian RTL.
+- [x] Added Vazirmatn and responsive global RTL styling.
+- [x] Added a simple Persian placeholder page.
 
 ### Remaining
 
-- [ ] Initialize the React, TypeScript, and Vite project.
+- [ ] Define schedule types and fixed daily time slots.
 - [ ] Implement Tehran-time and Saturday-week calculations.
 - [ ] Implement the 39-unit rotation engine.
 - [ ] Add Jalali date formatting and Persian digit formatting.
-- [ ] Build the Persian RTL responsive interface.
+- [ ] Build the complete Persian RTL responsive schedule interface.
 - [ ] Add current-period and next-period highlighting.
 - [ ] Add unit lookup with local persistence.
 - [ ] Add previous/current/next week navigation.
@@ -38,6 +43,22 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [ ] Add tests matching the two supplied schedule screenshots.
 - [ ] Add GitHub Actions for build and tests.
 - [ ] Add deployment configuration and final documentation.
+
+## Local development
+
+```bash
+npm install
+npm run dev
+```
+
+Available checks:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:run
+npm run build
+```
 
 ## Scheduled-run protocol
 
@@ -61,6 +82,6 @@ The supplied screenshots establish these anchor weeks:
 - Saturday 1405/04/20: first unit slot is unit 39, followed by units 1 through 38.
 - Saturday 1405/04/27: first unit slot is unit 38, followed by unit 39, then units 1 through 37.
 
-This implies that each Saturday all units move forward by one available unit slot, with wrapping across units 1 through 39.
+This implies that each Saturday all units move forward by one available unit time slot, with wrapping across units 1 through 39.
 
-See `docs/` for the full implementation plan, schedule model, and chronological run log.
+See `docs/` for the full implementation plan, schedule model, handoff state, and chronological run log.
