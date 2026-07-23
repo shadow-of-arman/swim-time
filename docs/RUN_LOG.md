@@ -121,3 +121,48 @@ Define the seven weekdays, eight daily time ranges, fixed بانوان/آقای�
 ### Next recommended task
 
 Implement Tehran-time primitives using `Intl.DateTimeFormat` and UTC-safe date arithmetic: obtain Tehran date parts, determine the latest Saturday, and calculate week offsets from Gregorian anchor Saturday `2026-07-11`. Add rollover tests before implementing unit rotation.
+
+## 2026-07-23 - Run 3: Tehran week calculations
+
+### Steps taken
+
+- Read the current README, implementation plan, handoff, and complete run log before making changes.
+- Inspected the latest run commit and confirmed Tehran date primitives as the next coherent task.
+- Added `src/domain/tehranTime.ts` with the `Asia/Tehran` timezone constant and Gregorian date-only types.
+- Added Tehran Gregorian year, month, and day extraction using `Intl.DateTimeFormat.formatToParts` with Latin digits.
+- Added Saturday-first weekday mapping where Saturday is index 0 and Friday is index 6.
+- Added validated UTC-midnight conversion helpers and integer day arithmetic to avoid visitor-local timezone effects.
+- Added latest-Saturday calculation for the active Tehran week.
+- Added whole-week offset calculation from the documented anchor Saturday `2026-07-11`.
+- Added `src/domain/tehranTime.test.ts` covering Tehran midnight rollover, latest-Saturday selection, anchor offsets, month-boundary arithmetic, and anchor weekday validation.
+- Updated the README and handoff documentation.
+
+### Verification
+
+- Compiled the Tehran-time module successfully with TypeScript 5.8.3 under strict settings.
+- Compiled the test source under strict settings using a temporary minimal Vitest declaration.
+- Ran Node.js 22 runtime checks at `2026-07-17T20:29:59Z` and `2026-07-17T20:30:00Z`, confirming the Tehran date changes from Friday 2026-07-17 to Saturday 2026-07-18 exactly at Tehran midnight.
+- Confirmed latest-Saturday results of 2026-07-11 before rollover and 2026-07-18 at rollover.
+- Confirmed week offsets `-1`, `0`, and `1` before, at, and after the anchor week.
+- Confirmed UTC-safe day arithmetic across month and year boundaries.
+- The actual repository Vitest suite, dependency installation, linting, and Vite production build remain pending because the GitHub connector does not provide a repository shell.
+
+### Decisions
+
+- Keep timezone conversion limited to obtaining Tehran's current Gregorian calendar date; perform all later day and week arithmetic on date-only UTC values.
+- Derive the weekday from the extracted Gregorian date instead of parsing localized weekday text.
+- Keep the anchor as a typed Gregorian date-only value rather than a timestamp with an implied timezone.
+- Reject invalid dates and non-integer day offsets instead of allowing JavaScript date normalization to hide configuration errors.
+
+### Steps left
+
+- Implement positive-modulo unit rotation and map all 39 private periods to units.
+- Generate a resolved weekly schedule while preserving public and cleaning periods.
+- Verify complete unit sequences against both supplied screenshot weeks.
+- Add Jalali and Persian-number formatting.
+- Build the responsive schedule UI, navigation, unit lookup, and current-period behavior.
+- Add overrides, CI, deployment, and final documentation.
+
+### Next recommended task
+
+Implement a resolved schedule domain module. Private slot index 0 must map to unit 39 at week offset 0 and unit 38 at week offset 1, with all other assignments wrapping through units 1 to 39 by positive modulo. Add tests proving every unit appears exactly once and the anchor-week sequences match both screenshots before beginning the UI.
