@@ -16,7 +16,7 @@ A small Persian-first website for showing the Arghavan Tower swimming-pool sched
 
 ## Current status
 
-**Phase:** Live on GitHub Pages; Arghavan Tower branding and calendar-adjacent week navigation are implemented.
+**Phase:** Live on GitHub Pages; PWA icon support and independent calendar and unit-lookup week controls are implemented.
 
 ### Completed
 
@@ -67,11 +67,13 @@ A small Persian-first website for showing the Arghavan Tower swimming-pool sched
 - [x] Generated and committed a verified npm lockfile and switched automated installs to `npm ci`.
 - [x] Published the site through GitHub Pages.
 - [x] Branded the interface for برج ارغوان and moved week navigation directly above the schedule.
+- [x] Added the supplied pool image as the favicon, Apple Home Screen icon, and installed web-app icon.
+- [x] Separated the calendar week from the unit lookup, which independently switches between the current and next week.
 
 ### Remaining
 
-- [ ] Confirm `Repository checks`, `Static site artifact`, and `Deploy GitHub Pages` pass after the latest interface update.
-- [ ] Perform final mobile and desktop browser verification of the live Arghavan Tower layout and mark the MVP complete.
+- [ ] Confirm `Repository checks`, `Static site artifact`, and `Deploy GitHub Pages` pass after the PWA and independent-week update.
+- [ ] Verify the favicon, Add to Home Screen icon, standalone launch, and independent calendar/unit week controls on the live mobile and desktop site.
 
 ## Live site
 
@@ -92,6 +94,8 @@ npm run typecheck
 npm run test:run
 npm run build
 ```
+
+The pool icon is generated into `public/pool-icon-512.png` before development and production builds from the verified source parts under `assets/`.
 
 ## Static delivery
 
