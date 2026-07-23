@@ -2,7 +2,7 @@
 
 ## Current state
 
-The project foundation, fixed weekly schedule model, Tehran date primitives, and 39-unit rotation engine are now present on `main`. The application still shows a temporary Persian placeholder page, but the domain layer can now resolve any Tehran week into a complete seven-day schedule with public periods, cleaning periods, and one private period for every unit.
+The project foundation, fixed weekly schedule model, Tehran date primitives, 39-unit rotation engine, and Persian formatting utilities are now present on `main`. The application still shows a temporary Persian placeholder page, but the domain layer can resolve any Tehran week into a complete schedule and produce the Persian date labels required by the interface.
 
 ## Confirmed decisions
 
@@ -19,6 +19,7 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, and
 - Domain identifiers remain English, while exported user-facing labels are Persian.
 - Calendar arithmetic uses Gregorian date-only values represented at UTC midnight, preventing the browser's local timezone from changing week calculations.
 - Fixed schedule definitions remain immutable; resolved schedules add unit numbers without mutating public or cleaning periods.
+- Jalali conversion uses the built-in `Intl.DateTimeFormat` Persian calendar rather than an additional date library.
 
 ## Current architecture
 
@@ -32,6 +33,8 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, and
 - `src/domain/tehranTime.test.ts`: tests for Tehran midnight rollover, latest-Saturday selection, anchor offsets, month-boundary arithmetic, and anchor validation.
 - `src/domain/resolvedSchedule.ts`: positive-modulo unit rotation, private-slot-to-unit resolution, complete resolved weekly schedules, date-based schedule resolution, and private-unit sequence extraction.
 - `src/domain/resolvedSchedule.test.ts`: tests for modulo wrapping, screenshot anchor sequences, unit uniqueness across varied offsets, non-private-slot preservation, date-based resolution, and invalid inputs.
+- `src/domain/persianFormatting.ts`: Persian-digit conversion, Jalali date-part extraction, numeric/concise/full labels, and Saturday-to-Friday range formatting using UTC and the built-in Persian calendar.
+- `src/domain/persianFormatting.test.ts`: tests for digit systems, both documented anchor Saturdays, same-month and cross-month ranges, Persian month/year boundaries, and Saturday validation.
 - `package.json`: Vite, React, TypeScript, ESLint, and Vitest scripts and dependencies.
 - `tsconfig*.json`: strict application and tooling TypeScript configurations.
 - `eslint.config.js`: flat ESLint configuration for TypeScript and React hooks.
@@ -63,11 +66,21 @@ The project foundation, fixed weekly schedule model, Tehran date primitives, and
 - Every integer week offset produces each unit from 1 through 39 exactly once.
 - `resolveWeeklyScheduleForDate(date)` combines the Tehran week offset with the unit rotation.
 
+## Persian formatting behavior
+
+- `toPersianDigits(value)` converts Latin and Arabic-Indic numerals while preserving punctuation and signs.
+- `getPersianCalendarDateParts(date)` returns numeric Jalali year/month/day plus Persian month and weekday labels.
+- `formatJalaliNumeric(date)` returns a zero-padded label such as `۱۴۰۵/۰۴/۲۰`.
+- `formatJalaliConcise(date)` returns a label such as `۲۰ تیر ۱۴۰۵`.
+- `formatJalaliFull(date)` returns a label such as `شنبه ۲۰ تیر ۱۴۰۵`.
+- `formatJalaliWeekRange(saturday)` returns compact same-month, cross-month, or cross-year Saturday-to-Friday labels and rejects non-Saturday inputs.
+- The two documented weeks format as `۲۰ تا ۲۶ تیر ۱۴۰۵` and `۲۷ تیر تا ۲ مرداد ۱۴۰۵`.
+
 ## Anchor data inferred from screenshots
 
 - Week starting 1405/04/20: private slots begin with unit 39, then units 1 through 38.
 - Week starting 1405/04/27: private slots begin with unit 38, then unit 39, then units 1 through 37.
-- Both complete private-unit sequences are now covered by tests.
+- Both complete private-unit sequences are covered by tests.
 
 ## Documentation protocol
 
@@ -82,11 +95,10 @@ After implementation, each run must update the README status, append to the run 
 
 ## Verification performed
 
-- `src/domain/resolvedSchedule.ts` compiled successfully with TypeScript 5.8.3 under strict settings against compatible schedule and Tehran-time modules.
-- The new test source compiled under strict settings using a temporary minimal Vitest type declaration.
-- Node.js 22 runtime assertions confirmed the full offset-0 and offset-1 screenshot sequences.
-- Runtime assertions confirmed all units appear exactly once at offsets `-80`, `-39`, `-1`, `0`, `1`, `39`, and `80`.
-- Date-based resolution at `2026-07-18T12:00:00Z` produced week offset `1` and the expected sequence.
+- `src/domain/persianFormatting.ts` compiled successfully with TypeScript 5.8.3 under strict settings against compatible schedule and Tehran-time modules.
+- The new test source compiled under strict settings using a temporary minimal Vitest declaration.
+- Node.js 22 runtime checks confirmed Persian digit conversion, the Jalali anchor dates `۱۴۰۵/۰۴/۲۰` and `۱۴۰۵/۰۴/۲۷`, full and concise labels, and both expected week ranges.
+- Runtime checks confirmed the 1405 Tir-to-Mordad and 1404-to-1405 year boundaries without local-time drift.
 - The actual repository Vitest suite, dependency installation, linting, and Vite production build have not yet run because the GitHub connector does not provide a repository shell.
 
 ## Known uncertainties and issues
@@ -97,4 +109,4 @@ After implementation, each run must update the README status, append to the run 
 
 ## Exact next recommended task
 
-Add a focused Persian formatting module. Implement Persian-digit conversion and Jalali date formatting using built-in `Intl.DateTimeFormat` with the Persian calendar. It should format Gregorian `CalendarDate` values without local-timezone drift, provide concise and full Persian date labels, and format week ranges from Saturday through Friday. Add tests for the documented anchor Saturdays `2026-07-11` and `2026-07-18`, Persian digits, and month/year boundaries. Keep formatting separate from React components and do not begin the full interface until these labels are verified.
+Replace the temporary placeholder with a read-only current-week schedule interface. Use `getLatestSaturdayInTehran(new Date())`, `getWeekOffsetFromAnchor`, `resolveWeeklySchedule`, `addCalendarDays`, and the Persian formatting helpers. Render a clear current-week header, Persian date for each day, mobile-first day cards, and a desktop weekly grid. Keep the UI simple and fully Persian. Do not add week navigation, unit lookup, current-period highlighting, or overrides in the same run.
