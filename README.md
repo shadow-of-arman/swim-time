@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Portable static-build delivery added; workflow confirmation, hosted preview, and final review are next.
+**Phase:** Static delivery and maintenance documentation complete; workflow, hosted-browser, and final MVP verification remain.
 
 ### Completed
 
@@ -63,13 +63,14 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Added a GitHub Actions workflow for dependency installation, linting, type checking, tests, and the production build.
 - [x] Configured Vite to generate portable relative asset paths for static hosting below any URL path.
 - [x] Added a host-neutral workflow that builds and uploads the `dist/` directory as a downloadable static-site artifact.
+- [x] Added static artifact deployment, responsive release-check, maintenance, dependency-update, and rollback instructions.
 
 ### Remaining
 
 - [ ] Confirm the GitHub Actions verification and static-artifact workflows pass and resolve any reported failures.
 - [ ] Generate and commit a lockfile through a verified dependency installation if feasible.
 - [ ] Publish a hosted preview after confirming the available static-host option for this private repository.
-- [ ] Perform final responsive browser verification and finish maintenance documentation.
+- [ ] Perform final responsive browser verification and mark the MVP complete.
 
 ## Local development
 
@@ -92,6 +93,8 @@ npm run build
 The `Static site artifact` workflow runs on pushes to `main` and can also be started manually. It builds the application and uploads the complete `dist/` directory as the artifact `swimming-pool-time-static` for 14 days.
 
 The artifact is host-neutral and can be extracted into the document root of any static hosting provider. Vite uses relative asset paths, so the same build can be hosted at a root domain or a nested path without rebuilding.
+
+See `docs/DELIVERY.md` for the full release, hosting, maintenance, browser-verification, and rollback procedure.
 
 ## Scheduled-run protocol
 
@@ -117,4 +120,4 @@ The supplied screenshots establish these anchor weeks:
 
 This implies that each Saturday all units move forward by one available unit time slot, with wrapping across units 1 through 39.
 
-See `docs/` for the full implementation plan, schedule model, handoff state, and chronological run log.
+See `docs/` for the full implementation plan, schedule model, handoff state, chronological run log, and delivery guide.
