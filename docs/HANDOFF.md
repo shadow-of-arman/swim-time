@@ -2,7 +2,7 @@
 
 ## Current state
 
-The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian formatting, responsive schedule interface, live period status, week navigation, persisted unit lookup, and repository CI workflow are present on `main`. Every displayed week is generated directly from the anchor rotation. Manual schedule overrides remain explicitly out of scope.
+The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian formatting, responsive schedule interface, live period status, week navigation, persisted unit lookup, repository CI workflow, and portable static-build artifact workflow are present on `main`. Every displayed week is generated directly from the anchor rotation. Manual schedule overrides remain explicitly out of scope.
 
 ## Confirmed decisions
 
@@ -18,6 +18,8 @@ The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian 
 - A selected unit is stored as a canonical integer string under `swimming-pool:selected-unit`; storage failure is non-fatal.
 - Browsed weeks use an integer offset relative to the live Tehran week.
 - CI currently uses `npm install` because the repository does not yet contain a lockfile.
+- Static production assets use relative URLs so one build remains portable across root domains and nested paths.
+- A host-specific deployment workflow is deferred until the available hosting option for this private repository is confirmed.
 
 ## Current architecture
 
@@ -33,8 +35,10 @@ The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian 
 - `src/domain/weekNavigation.ts`: displayed-week calculations and Persian relative labels.
 - `src/domain/unitLookup.ts`: local-storage helpers and selected-unit schedule lookup.
 - Matching `*.test.ts` files cover the domain modules, including both screenshot weeks.
+- `vite.config.ts`: React plugin and portable `./` base path for static production output.
 - `.github/workflows/ci.yml`: push and pull-request verification using Node.js 22.16.0, dependency installation, linting, type checking, Vitest, and the Vite production build.
-- `package.json`, `tsconfig*.json`, `eslint.config.js`, and `vite.config.ts`: project tooling.
+- `.github/workflows/static-site.yml`: builds `dist/` on pushes to `main` or manual dispatch and uploads `swimming-pool-time-static` for 14 days.
+- `package.json`, `tsconfig*.json`, and `eslint.config.js`: project tooling.
 
 ## Interface behavior
 
@@ -44,14 +48,14 @@ The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian 
 - Users can select a unit from 1 through 39, persist it locally, view its date/time summary, and see it highlighted in either responsive layout.
 - Every displayed schedule comes directly from the same fixed rotation formula; no exception or override configuration is applied.
 
-## CI behavior
+## Automated workflow behavior
 
-- The workflow runs on pushes to `main` and on pull requests.
-- It checks out the repository and uses Node.js `22.16.0`.
-- It runs `npm install --no-audit --no-fund` because no lockfile exists yet.
-- It then runs `npm run lint`, `npm run typecheck`, `npm run test:run`, and `npm run build` as separate steps.
-- Concurrency cancels an older in-progress run for the same ref when a newer commit is pushed.
-- Workflow permissions are limited to read-only repository contents.
+- `Repository checks` runs on pushes to `main` and pull requests.
+- It runs `npm install --no-audit --no-fund`, linting, type checking, Vitest, and the production build.
+- `Static site artifact` runs on pushes to `main` and manual dispatch.
+- It builds the same production bundle and uploads the complete `dist/` directory as a host-neutral artifact.
+- Both workflows use Node.js `22.16.0`, read-only repository permissions, ten-minute timeouts, and concurrency cancellation.
+- The static artifact fails explicitly when `dist/` is missing and is retained for 14 days.
 
 ## Documentation protocol
 
@@ -59,21 +63,23 @@ Each implementation run must read `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `d
 
 ## Verification performed
 
-- The committed workflow was fetched from `main` and reviewed against the scripts defined in `package.json`.
-- A local YAML parse confirmed the workflow has the expected checkout, Node setup, install, lint, type-check, test, and build steps.
-- The workflow uses a Node version compatible with the existing Vite toolchain.
-- The GitHub connector available in this run could not list push-triggered workflow runs, so the first Actions result has not been confirmed here.
-- A lockfile could not be generated because the available local environment could not reach the npm registry and the GitHub connector does not provide a repository shell.
+- Fetched and reviewed the committed Vite and static-artifact workflow files from `main`.
+- Confirmed `base: './'` keeps generated asset references relative and does not change runtime schedule logic.
+- Confirmed the workflow installs dependencies, builds with the existing `npm run build` script, requires `dist/`, and uploads only the production output.
+- Confirmed the workflow has no write permissions, secrets, backend, admin functionality, or manual schedule override path.
+- The available connector still does not expose push-triggered workflow runs, so actual CI and artifact results have not been confirmed here.
+- A lockfile could not be generated because the available environment does not have repository shell access with npm registry connectivity.
 
 ## Known uncertainties and issues
 
 - The rotation rule is inferred from two screenshots and is assumed to continue indefinitely, as requested.
-- No lockfile exists yet, so CI uses `npm install` rather than `npm ci`.
-- The first GitHub Actions result still needs confirmation in the Actions interface or through a later connector capability.
+- No lockfile exists yet, so workflows use `npm install` rather than `npm ci`.
+- The GitHub Actions verification and static-artifact results still need confirmation in the Actions interface or through a later connector capability.
+- The static artifact is ready for hosting, but a public or private hosted preview has not yet been configured.
 - Browser rendering has not yet been inspected through a deployed preview.
 - Week navigation remains intentionally unbounded.
 - When local storage is blocked, unit selection cannot persist across page reloads.
 
 ## Exact next recommended task
 
-Add static deployment configuration as a focused delivery task. Prefer GitHub Pages only when it is available for this private repository; otherwise add a host-neutral production-build artifact workflow and document the remaining hosting setup. Keep the application static, do not add secrets, a backend, an admin dashboard, or manual schedule overrides. Also inspect the first CI result if it becomes accessible and fix any reported failure before marking automated verification complete.
+Perform final delivery verification. Inspect the latest `Repository checks` and `Static site artifact` workflow results, fix any lint, type-check, test, build, or artifact failure, and download or deploy the generated artifact to the confirmed static host. Then inspect the Persian RTL interface at representative mobile and desktop widths, document the chosen hosting procedure and maintenance steps, and mark the MVP complete only when those checks pass. Do not add a backend, admin dashboard, secrets, or manual schedule overrides.
