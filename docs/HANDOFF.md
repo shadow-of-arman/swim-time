@@ -2,7 +2,7 @@
 
 ## Current state
 
-The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian formatting, responsive schedule interface, live period status, week navigation, persisted unit lookup, repository CI workflow, and portable static-build artifact workflow are present on `main`. Every displayed week is generated directly from the anchor rotation. Manual schedule overrides remain explicitly out of scope.
+The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian formatting, responsive schedule interface, live period status, week navigation, persisted unit lookup, repository CI workflow, portable static-build artifact workflow, and delivery-maintenance guide are present on `main`. Every displayed week is generated directly from the anchor rotation. Manual schedule overrides remain explicitly out of scope.
 
 ## Confirmed decisions
 
@@ -20,6 +20,7 @@ The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian 
 - CI currently uses `npm install` because the repository does not yet contain a lockfile.
 - Static production assets use relative URLs so one build remains portable across root domains and nested paths.
 - A host-specific deployment workflow is deferred until the available hosting option for this private repository is confirmed.
+- Release and maintenance procedures are documented independently of a specific hosting provider.
 
 ## Current architecture
 
@@ -38,6 +39,7 @@ The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian 
 - `vite.config.ts`: React plugin and portable `./` base path for static production output.
 - `.github/workflows/ci.yml`: push and pull-request verification using Node.js 22.16.0, dependency installation, linting, type checking, Vitest, and the Vite production build.
 - `.github/workflows/static-site.yml`: builds `dist/` on pushes to `main` or manual dispatch and uploads `swimming-pool-time-static` for 14 days.
+- `docs/DELIVERY.md`: host-neutral artifact deployment, manual release checks, schedule maintenance, dependency updates, rollback, and final MVP sign-off.
 - `package.json`, `tsconfig*.json`, and `eslint.config.js`: project tooling.
 
 ## Interface behavior
@@ -57,29 +59,38 @@ The project foundation, Tehran-aware schedule engine, 39-unit rotation, Persian 
 - Both workflows use Node.js `22.16.0`, read-only repository permissions, ten-minute timeouts, and concurrency cancellation.
 - The static artifact fails explicitly when `dist/` is missing and is retained for 14 days.
 
+## Delivery and maintenance behavior
+
+- The production unit is the complete generated `dist/` directory.
+- The downloadable artifact may be extracted into a root domain or nested static path without rebuilding.
+- The application has no client-side routes, so static hosts do not need SPA fallback rewriting.
+- `docs/DELIVERY.md` provides representative 390-pixel mobile and 1440-pixel desktop verification widths.
+- The guide includes checks for Persian RTL direction, isolated dates and times, Tehran-week behavior, week navigation, current-period states, and persisted unit selection.
+- The guide documents how to update dependencies, protect the fixed rotation rule, and roll back to a known-good static artifact.
+
 ## Documentation protocol
 
-Each implementation run must read `README.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/HANDOFF.md`, and the complete `docs/RUN_LOG.md`. After implementation, update README status, append to the run log without removing history, and replace this handoff with the latest state.
+Each implementation run must read `README.md` and every file under `docs/`. After implementation, update README status, append to the run log without removing history, and replace this handoff with the latest state.
 
 ## Verification performed
 
-- Fetched and reviewed the committed Vite and static-artifact workflow files from `main`.
-- Confirmed `base: './'` keeps generated asset references relative and does not change runtime schedule logic.
-- Confirmed the workflow installs dependencies, builds with the existing `npm run build` script, requires `dist/`, and uploads only the production output.
-- Confirmed the workflow has no write permissions, secrets, backend, admin functionality, or manual schedule override path.
-- The available connector still does not expose push-triggered workflow runs, so actual CI and artifact results have not been confirmed here.
-- A lockfile could not be generated because the available environment does not have repository shell access with npm registry connectivity.
+- Read the current README, implementation plan, handoff, and complete run log before this change.
+- Inspected the latest repository commits and confirmed delivery documentation as the next achievable unfinished task while push-triggered workflow results remain unavailable through the connector.
+- Reviewed the new delivery guide against the existing workflow names, artifact name, retention period, Vite base path, package scripts, static application behavior, and fixed-rotation constraints.
+- Confirmed the guide does not require secrets, backend infrastructure, an admin dashboard, authentication, or manual schedule overrides.
+- The GitHub combined-status endpoint returned no status contexts for the latest commit, and the available workflow-run connector remains limited to pull-request-triggered runs; therefore actual push workflow results are still unconfirmed.
+- The container could not reach GitHub or the npm registry, so a lockfile, production bundle, hosted preview, and browser screenshots could not be produced in this run.
 
 ## Known uncertainties and issues
 
 - The rotation rule is inferred from two screenshots and is assumed to continue indefinitely, as requested.
 - No lockfile exists yet, so workflows use `npm install` rather than `npm ci`.
 - The GitHub Actions verification and static-artifact results still need confirmation in the Actions interface or through a later connector capability.
-- The static artifact is ready for hosting, but a public or private hosted preview has not yet been configured.
+- The static artifact workflow is configured, but a public or private hosted preview has not yet been confirmed.
 - Browser rendering has not yet been inspected through a deployed preview.
 - Week navigation remains intentionally unbounded.
 - When local storage is blocked, unit selection cannot persist across page reloads.
 
 ## Exact next recommended task
 
-Perform final delivery verification. Inspect the latest `Repository checks` and `Static site artifact` workflow results, fix any lint, type-check, test, build, or artifact failure, and download or deploy the generated artifact to the confirmed static host. Then inspect the Persian RTL interface at representative mobile and desktop widths, document the chosen hosting procedure and maintenance steps, and mark the MVP complete only when those checks pass. Do not add a backend, admin dashboard, secrets, or manual schedule overrides.
+Perform only the remaining external verification work. Inspect the latest `Repository checks` and `Static site artifact` runs in GitHub Actions, fix any lint, type-check, test, build, or artifact failure, and obtain the generated `swimming-pool-time-static` artifact. Deploy it to the confirmed static host or open it through an approved preview environment, then execute the checklist in `docs/DELIVERY.md` at representative mobile and desktop widths. Record the final hosting location and verified results, generate a lockfile through a real npm installation if feasible, and mark the MVP complete only after those checks pass. Do not add a backend, admin dashboard, secrets, or manual schedule overrides.
