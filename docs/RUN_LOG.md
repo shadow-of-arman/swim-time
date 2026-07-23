@@ -165,7 +165,7 @@ Implement Tehran-time primitives using `Intl.DateTimeFormat` and UTC-safe date a
 
 ### Next recommended task
 
-Implement a resolved schedule domain module. Private slot index 0 must map to unit 39 at week offset 0 and unit 38 at week offset 1, with all other assignments wrapping through units 1 to 39 by positive modulo. Add tests proving every unit appears exactly once and the anchor-week sequences match both screenshots before beginning the UI.
+Implement a resolved schedule domain module. Private slot index 0 must map to unit 39 in anchor week offset 0 and unit 38 in offset 1, with all other assignments wrapping through units 1 to 39 by positive modulo. Add tests proving every unit appears exactly once and the anchor-week sequences match both screenshots before beginning the UI.
 
 ## 2026-07-23 - Run 4: Unit rotation and resolved schedules
 
@@ -253,3 +253,52 @@ Implement a separate Persian formatting module using the built-in Persian calend
 ### Next recommended task
 
 Build a read-only current-week interface using the verified domain modules. Show a Persian week-range header, Persian date for each day, mobile day cards, and a desktop schedule grid. Keep navigation, unit lookup, active-period highlighting, and overrides for later runs.
+
+## 2026-07-23 - Run 6: Responsive current-week interface
+
+### Steps taken
+
+- Read the current README, implementation plan, handoff, and complete run log before making changes.
+- Inspected the latest application and domain files and confirmed the read-only current-week interface as the next task.
+- Replaced the temporary placeholder in `src/App.tsx` with runtime current-week schedule rendering.
+- Used the Tehran latest-Saturday and anchor-offset helpers to resolve the correct unit assignments for the active week.
+- Added a Persian week-range header, Tehran-time explanation, and schedule legend.
+- Added Persian date labels for all seven days.
+- Added mobile day cards containing all eight daily periods.
+- Added a desktop weekly table containing every day and time range.
+- Added restrained, distinct presentation for public, private-unit, and cleaning periods.
+- Reworked `src/index.css` for responsive RTL layout, accessible table/card presentation, and the 900px mobile/desktop breakpoint.
+- Updated the README and handoff documentation.
+
+### Verification
+
+- Fetched and reviewed the committed `src/App.tsx` and `src/index.css` from `main`.
+- Confirmed the interface uses the verified Tehran week, resolved schedule, and Persian formatting APIs rather than duplicating domain logic.
+- Confirmed all visible interface text is Persian.
+- Confirmed all seven days and all eight periods are rendered in both responsive presentations.
+- Confirmed semantic table headings, scope attributes, a screen-reader caption, labelled sections, and RTL-safe time content are present.
+- Full repository dependency installation, linting, Vitest execution, browser rendering, and Vite production build remain pending because the GitHub connector does not provide a repository shell or deployed preview.
+
+### Decisions
+
+- Keep the first complete interface read-only and avoid mixing navigation, lookup, or active-period logic into this run.
+- Render mobile cards and a desktop table from the same resolved schedule data.
+- Use a 900px breakpoint so tablets and phones receive the more readable card layout.
+- Preserve a modest visual treatment with neutral backgrounds and limited accent colors.
+
+### Issues
+
+- A repository shell is still unavailable, so the full Vite application has not been compiled or rendered in a browser.
+- The current interface calculates its data once when React renders; future active-period behavior should introduce an appropriate clock refresh interval.
+
+### Steps left
+
+- Add current-period and next-period behavior with today highlighting.
+- Add previous/current/next week navigation.
+- Add unit lookup with local persistence.
+- Add manual schedule overrides.
+- Add CI, deployment, browser verification, and final maintenance documentation.
+
+### Next recommended task
+
+Add pure helpers for Tehran time-of-day, active-period detection, and the next upcoming period. Cover before-opening, between-period, active-period, after-closing, Friday-to-Saturday rollover, and cleaning periods with tests. Then highlight today and the active period and show a concise Persian next-period card in both responsive layouts. Keep navigation and unit lookup for later runs.
