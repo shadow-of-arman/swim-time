@@ -144,7 +144,7 @@ function App() {
     <main className="app-shell">
       <header className="page-header">
         <div className="page-heading">
-          <p className="eyebrow">استخر ساختمان</p>
+          <p className="eyebrow">برج ارغوان</p>
           <h1>برنامه هفتگی استخر</h1>
           <p className="page-summary">
             برنامه به‌صورت خودکار بر اساس ساعت تهران محاسبه می‌شود و هر هفته
@@ -161,29 +161,6 @@ function App() {
           <span className="week-summary__timezone">به وقت تهران</span>
         </div>
       </header>
-
-      <nav className="week-navigation" aria-label="جابجایی بین هفته‌ها">
-        <button
-          type="button"
-          onClick={() => setRelativeWeekOffset((offset) => offset - 1)}
-        >
-          هفته قبل
-        </button>
-        <button
-          className="week-navigation__current"
-          type="button"
-          disabled={displayedWeek.isCurrentWeek}
-          onClick={() => setRelativeWeekOffset(0)}
-        >
-          هفته جاری
-        </button>
-        <button
-          type="button"
-          onClick={() => setRelativeWeekOffset((offset) => offset + 1)}
-        >
-          هفته بعد
-        </button>
-      </nav>
 
       <section className="unit-lookup" aria-labelledby="unit-lookup-title">
         <div className="unit-lookup__intro">
@@ -329,6 +306,29 @@ function App() {
           </>
         ) : null}
       </ul>
+
+      <nav className="week-navigation" aria-label="جابجایی بین هفته‌ها">
+        <button
+          type="button"
+          onClick={() => setRelativeWeekOffset((offset) => offset - 1)}
+        >
+          هفته قبل
+        </button>
+        <button
+          className="week-navigation__current"
+          type="button"
+          disabled={displayedWeek.isCurrentWeek}
+          onClick={() => setRelativeWeekOffset(0)}
+        >
+          هفته جاری
+        </button>
+        <button
+          type="button"
+          onClick={() => setRelativeWeekOffset((offset) => offset + 1)}
+        >
+          هفته بعد
+        </button>
+      </nav>
 
       <section className="mobile-schedule" aria-label="برنامه روزهای هفته">
         {days.map((day) => {
