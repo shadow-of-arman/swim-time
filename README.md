@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Project foundation complete; schedule engine is next.
+**Phase:** Fixed schedule model complete; Tehran date calculations are next.
 
 ### Completed
 
@@ -28,10 +28,12 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Set the document language and direction to Persian RTL.
 - [x] Added Vazirmatn and responsive global RTL styling.
 - [x] Added a simple Persian placeholder page.
+- [x] Defined strongly typed weekdays, time ranges, public periods, private slots, and cleaning periods.
+- [x] Verified the fixed model contains seven days, eight periods per day, and exactly 39 ordered private slots.
+- [x] Added initial Vitest coverage for fixed-schedule invariants.
 
 ### Remaining
 
-- [ ] Define schedule types and fixed daily time slots.
 - [ ] Implement Tehran-time and Saturday-week calculations.
 - [ ] Implement the 39-unit rotation engine.
 - [ ] Add Jalali date formatting and Persian digit formatting.
