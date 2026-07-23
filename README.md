@@ -12,11 +12,11 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - The website should be simple, reliable, responsive, and slightly polished, not portfolio-oriented.
 - The 39 apartment units rotate by one available unit slot each week.
 - Sunday, Tuesday, and Thursday end with a cleaning slot.
-- Manual schedule overrides must be possible through configuration.
+- The generated weekly rotation is the only schedule source; manual overrides are not part of this project.
 
 ## Current status
 
-**Phase:** Manual schedule overrides complete; automated repository verification is next.
+**Phase:** Core schedule, week navigation, and unit lookup complete; automated repository verification is next.
 
 ### Completed
 
@@ -59,10 +59,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Persisted valid unit selections in local storage with safe malformed-value recovery.
 - [x] Added displayed-week unit lookup summaries and selected-unit highlighting on mobile and desktop.
 - [x] Added tests for unit validation, persistence failures, and schedule-position lookup.
-- [x] Added typed manual overrides keyed by Gregorian Saturday strings.
-- [x] Applied configured overrides before live status and unit lookup resolution.
-- [x] Added validation for week keys, positions, unit ranges, duplicate positions, and the final 1-through-39 invariant.
-- [x] Added tests for empty configuration, unit swaps, public replacements, invalid indexes, duplicate units, and unrelated weeks.
+- [x] Confirmed manual schedule overrides are out of scope and removed the unused implementation.
 
 ### Remaining
 
