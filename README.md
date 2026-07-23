@@ -16,7 +16,7 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 
 ## Current status
 
-**Phase:** Unit lookup and local persistence complete; manual schedule overrides are next.
+**Phase:** Manual schedule overrides complete; automated repository verification is next.
 
 ### Completed
 
@@ -59,10 +59,13 @@ A small Persian-first website for showing the apartment swimming-pool schedule. 
 - [x] Persisted valid unit selections in local storage with safe malformed-value recovery.
 - [x] Added displayed-week unit lookup summaries and selected-unit highlighting on mobile and desktop.
 - [x] Added tests for unit validation, persistence failures, and schedule-position lookup.
+- [x] Added typed manual overrides keyed by Gregorian Saturday strings.
+- [x] Applied configured overrides before live status and unit lookup resolution.
+- [x] Added validation for week keys, positions, unit ranges, duplicate positions, and the final 1-through-39 invariant.
+- [x] Added tests for empty configuration, unit swaps, public replacements, invalid indexes, duplicate units, and unrelated weeks.
 
 ### Remaining
 
-- [ ] Add manual override configuration.
 - [ ] Add GitHub Actions for build and tests.
 - [ ] Add deployment configuration and final documentation.
 
